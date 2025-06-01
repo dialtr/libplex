@@ -25,6 +25,10 @@ libplex.a: gdm.o
 	$(AR) rcs libplex.a $^
 	$(RANLIB) libplex.a
 
+.PHONY:
+valgrind: demo
+	valgrind --leak-check=full --track-fds=yes ./demo
+
 .cc.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
