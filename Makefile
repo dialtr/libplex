@@ -8,7 +8,7 @@ all: libplex.a demo
 
 .PHONY:
 clean:
-	-rm -f libplex.a demo *.o
+	-rm -f demo *.a *.o
 
 demo: demo.o libplex.a
 	$(CXX) $(CXXFLAGS) -o demo $^
