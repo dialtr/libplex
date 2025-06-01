@@ -9,11 +9,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <iostream>
+
+using std::cerr;
+using std::cout;
+using std::endl;
+
 namespace {
 
 // This is the text message sent in a datagram when performing scans for
 // Plex servers and clients.
-const char* const kGdmMessage = "M-SEARCH * HTTP/1.0";
+const char kGdmScanMessage[] = "M-SEARCH * HTTP/1.0";
 
 // The IP address constants used for the broadcast / multicast when
 // scanning for clients and servers.
@@ -149,7 +155,35 @@ GDM::GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address)
   assert(scan_type_ != ScanType::kNone);
 }
 
-int GDM::Scan() { return 0; }
+int GDM::Scan() {
+  // Send the UPnP search message.
+  const ssize_t num_sent =
+      sendto(fd_, kGdmScanMessage, sizeof(kGdmScanMessage), 0,
+             (const sockaddr*)&address_, sizeof(address_));
+  if (num_sent != sizeof(kGdmScanMessage)) {
+    cerr << "sendto(): returned " << num_sent << ", error " << errno;
+    return -1;
+  }
+
+  // Loop, reading for responses.
+  for (int i = 0; i < 5; ++i) {
+    char buf[2048] = {0};  // TODO(tdial): allocate dynamically.
+    struct sockaddr_in address = {0};
+    socklen_t addr_len = sizeof(address_);
+    const ssize_t num_received =
+        recvfrom(fd_, buf, sizeof(buf) - 1, 0,
+                 reinterpret_cast<sockaddr*>(&address), &addr_len);
+    if (num_received > 0) {
+      // TODO(tdial): Actually parse the result, and pass to the caller in some
+      // kind of structure. For now, we'll just dump the message to the console.
+      buf[num_received] = 0;
+      cout << "Received Message: '" << buf << "'" << endl << endl;
+    }
+    sleep(1);
+  }
+
+  return 0;
+}
 
 GDM::~GDM() {
   assert(fd_ > 0);

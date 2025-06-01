@@ -25,6 +25,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  // Scan: For now this dumps responses to stdout.
+  gdm->Scan();
+
   // Delete the GDM object.
   delete gdm;
   cout << "Destroyed GDM object." << endl;
