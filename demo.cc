@@ -19,13 +19,15 @@ int main(int argc, char* argv[]) {
   // Make sure we got it.
   assert(gdm != nullptr);
   if (gdm) {
-    cout << "Created GDM object" << endl;
+    cout << "Created GDM object." << endl;
   } else {
     cerr << "Error " << errno << " attempting to create GDM object." << endl;
+    return 1;
   }
 
   // Delete the GDM object.
   delete gdm;
+  cout << "Destroyed GDM object." << endl;
 
   return 0;
 }
