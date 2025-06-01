@@ -166,23 +166,17 @@ int GDM::Scan() {
       sendto(fd_, kGdmScanMessage, sizeof(kGdmScanMessage), 0,
              (const sockaddr*)&address_, sizeof(address_));
   if (num_sent != sizeof(kGdmScanMessage)) {
-    cerr << "sendto(): returned " << num_sent << ", error " << errno;
     return -1;
   }
 
-  cerr << "got here 1" << endl;
-
   // Loop, reading for responses.
   for (int i = 0; i < 5; ++i) {
-    cerr << "got here 2" << endl;
     char buf[1024] = {0};  // TODO(tdial): allocate dynamically.
-    cerr << "got here 2.1: sizeof(buf) = " << sizeof(buf) << endl;
     struct sockaddr_in address = {0};
     socklen_t addr_len = sizeof(address_);
     const ssize_t num_received =
         recvfrom(fd_, buf, sizeof(buf) - 1, 0,
                  reinterpret_cast<sockaddr*>(&address), &addr_len);
-    cerr << "got here 3" << endl;
     if (num_received > 0) {
       // TODO(tdial): Actually parse the result, and pass to the caller in some
       // kind of structure. For now, we'll just dump the message to the console.
