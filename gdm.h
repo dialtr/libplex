@@ -1,6 +1,6 @@
 // Copyright (C) 2025 Thomas R. Dial
-#ifndef GDM_H_INCLUDED_
-#define GDM_H_INCLUDED_
+#ifndef GDM_H_
+#define GDM_H_
 
 namespace plex {
 
@@ -23,4 +23,4 @@ class GDM {
 
 }  // namespace plex
 
-#endif  // GDM_H_INCLUDED_
+#endif  // GDM_H_

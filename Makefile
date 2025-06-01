@@ -17,6 +17,10 @@ demo: demo.o plexgdm.a
 format:
 	clang-format -style=Google -i *.cc *.h
 
+.PHONY:
+lint:
+	cpplint *.cc *.h
+
 plexgdm.a: gdm.o
 	$(AR) rcs plexgdm.a $^
 	$(RANLIB) plexgdm.a
