@@ -24,7 +24,7 @@ const char kGdmScanMessage[] = "M-SEARCH * HTTP/1.0";
 // The IP address constants used for the broadcast / multicast when
 // scanning for clients and servers.
 const char* const kGdmClientScanAddress = "255.255.255.255";
-const char* const kGdmServerScanAddress = "239.0.0.250";
+const char* const kGdmServerScanAddress = "239.255.255.250";
 
 // The ports used for scanning clients, servers respectively.
 const int kGdmClientScanPort = 32412;
@@ -94,7 +94,7 @@ int SetMulticastTtlOption(int fd, int ttl) {
 
 namespace plex {
 
-GDM* GDM::New(GDM::ScanType type) {
+GDM* GDM::New(const Options& options) {
   const int sock = NewUdpSocket();
   if (sock < 0) {
     return nullptr;
@@ -104,8 +104,8 @@ GDM* GDM::New(GDM::ScanType type) {
   Closer closer(sock);
 
   int status = 0;
-  const char* ip_address = nullptr;
-  unsigned short port = 0;
+  const char* address = options.address;
+  unsigned short port = options.port;
 
   // Don't go to far.
   status = SetMulticastTtlOption(sock, 1);
@@ -113,10 +113,10 @@ GDM* GDM::New(GDM::ScanType type) {
     return nullptr;
   }
 
-  switch (type) {
+  switch (options.type) {
     case ScanType::kServer: {
-      ip_address = kGdmServerScanAddress;
-      port = kGdmServerScanPort;
+      address = address ? address : kGdmServerScanAddress;
+      port = port ? port : kGdmServerScanPort;
     } break;
 
     case ScanType::kClient: {
@@ -128,8 +128,8 @@ GDM* GDM::New(GDM::ScanType type) {
       if (status < 0) {
         return nullptr;
       }
-      ip_address = kGdmClientScanAddress;
-      port = kGdmClientScanPort;
+      address = address ? address : kGdmClientScanAddress;
+      port = port ? port : kGdmClientScanPort;
     } break;
 
     default: {
@@ -140,7 +140,7 @@ GDM* GDM::New(GDM::ScanType type) {
 
   // Parse the string IP to IPV4 address.
   struct in_addr inaddr{0};
-  status = inet_aton(ip_address, &inaddr);
+  status = inet_aton(address, &inaddr);
   if (status == 0) {
     // Invalid address.
     return nullptr;
@@ -150,7 +150,7 @@ GDM* GDM::New(GDM::ScanType type) {
       .sin_family = AF_INET, .sin_port = htons(port), .sin_addr{inaddr}};
 
   closer.Dismiss();
-  return new GDM(sock, type, addr);
+  return new GDM(sock, options.type, addr);
 }
 
 GDM::GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address)
@@ -169,7 +169,6 @@ int GDM::Scan() {
     cerr << "sendto(): returned " << num_sent << ", error " << errno;
     return -1;
   }
-  //}
 
   cerr << "got here 1" << endl;
 

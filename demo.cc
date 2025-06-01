@@ -14,7 +14,12 @@ using ::std::endl;
 
 int main(int argc, char* argv[]) {
   // Create a new GDM object to scan for servers.
-  GDM* gdm = GDM::New(GDM::ScanType::kServer);
+  GDM::Options options;
+  options.type = GDM::ScanType::kServer;
+  // options.type = GDM::ScanType::kClient;
+  //  options.address = "239.255.255.250";
+  //  options.port = 32414;
+  GDM* gdm = GDM::New(options);
 
   // Make sure we got it.
   assert(gdm != nullptr);

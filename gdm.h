@@ -14,8 +14,15 @@ class GDM {
     kClient = 2   // Scan for clients.
   };
 
+  struct Options {
+    GDM::ScanType type = ScanType::kNone;
+    const char* message = nullptr;
+    const char* address = nullptr;
+    unsigned short port = 0;
+  };
+
   // Create new instance.
-  static GDM* New(GDM::ScanType type);
+  static GDM* New(const Options& options);
 
   // Scan for plex hosts.
   int Scan();
