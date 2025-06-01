@@ -3,9 +3,4 @@
 
 using ::plex::GDM;
 
-int main(int argc, char* argv[]) {
-  //
-  GDM gdm;
-	(void)gdm;
-  return 0;
-}
+int main(int argc, char* argv[]) { return 0; }

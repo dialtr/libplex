@@ -13,6 +13,10 @@ clean:
 demo: demo.o plexgdm.a
 	$(CXX) $(CXXFLAGS) -o demo $^
 
+.PHONY:
+format:
+	clang-format -style=Google -i *.cc *.h
+
 plexgdm.a: gdm.o
 	$(AR) rcs plexgdm.a $^
 	$(RANLIB) plexgdm.a
