@@ -161,7 +161,6 @@ GDM::GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address)
 
 int GDM::Scan() {
   // Send the UPnP search message.
-  // for (int j = 0; j < 3; ++j) {
   const ssize_t num_sent =
       sendto(fd_, kGdmScanMessage, sizeof(kGdmScanMessage), 0,
              (const sockaddr*)&address_, sizeof(address_));
