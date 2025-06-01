@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -127,17 +128,28 @@ GDM* GDM::New(GDM::ScanType type) {
     }
   }
 
+  // Parse the string IP to IPV4 address.
+  struct in_addr inaddr{0};
+  status = inet_aton(ip_address, &inaddr);
+  if (status == 0) {
+    // Invalid address.
+    return nullptr;
+  }
+
+  const struct sockaddr_in addr{
+      .sin_family = AF_INET, .sin_port = htons(port), .sin_addr{inaddr}};
+
   closer.Dismiss();
-  return new GDM(sock, type, ip_address, port);
+  return new GDM(sock, type, addr);
 }
 
-GDM::GDM(int fd, GDM::ScanType type, const char* ip, unsigned short port)
-    : fd_(fd), scan_type_(type), ip_address_(ip), port_(port) {
+GDM::GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address)
+    : fd_(fd), scan_type_(type), address_(address) {
   assert(fd >= 0);
   assert(scan_type_ != ScanType::kNone);
-  assert(ip != nullptr);
-  assert(port_ != 0);
 }
+
+int GDM::Scan() { return 0; }
 
 GDM::~GDM() {
   assert(fd_ > 0);

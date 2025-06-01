@@ -2,6 +2,8 @@
 #ifndef GDM_H_
 #define GDM_H_
 
+#include <arpa/inet.h>
+
 namespace plex {
 
 class GDM {
@@ -15,14 +17,18 @@ class GDM {
   // Create new instance.
   static GDM* New(GDM::ScanType type);
 
+  // Scan for plex hosts.
+  int Scan();
+
   // Destroy the instance.
   ~GDM();
 
  private:
-  GDM(int fd, GDM::ScanType type, const char* ip, unsigned short port);
+  GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address);
+
   int fd_ = -1;
   GDM::ScanType scan_type_ = ScanType::kNone;
-  const char* ip_address_ = nullptr;
+  const struct sockaddr_in address_{0};
   unsigned short port_ = 0;
 };
 
