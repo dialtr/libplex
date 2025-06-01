@@ -14,6 +14,15 @@ namespace {
 // Plex servers and clients.
 const char* const kGdmMessage = "M-SEARCH * HTTP/1.0";
 
+// The IP address constants used for the broadcast / multicast when
+// scanning for clients and servers.
+const char* const kGdmClientScanAddress = "255.255.255.255";
+const char* const kGdmServerScanAddress = "239.0.0.250";
+
+// The ports used for scanning clients, servers respectively.
+const int kGdmClientScanPort = 32412;
+const int kGdmServerScanPort = 32414;
+
 // RAII wrapper that closes a file descriptor, unless dismissed.
 class Closer {
  public:
@@ -75,9 +84,9 @@ int SetMulticastTtlOption(int fd, int ttl) {
 
 }  // namespace
 
-namespace plex {  //
+namespace plex {
 
-GDM* GDM::New(GDM::ScanType type) {  //
+GDM* GDM::New(GDM::ScanType type) {
   const int sock = NewUdpSocket();
   if (sock < 0) {
     return nullptr;
@@ -95,8 +104,8 @@ GDM* GDM::New(GDM::ScanType type) {  //
       if (status < 0) {
         return nullptr;
       }
-      ip_address = "239.0.0.250";
-      port = 32414;  // TODO(tdial): define constant above.
+      ip_address = kGdmServerScanAddress;
+      port = kGdmServerScanPort;
     } break;
 
     case ScanType::kClient: {
@@ -108,8 +117,8 @@ GDM* GDM::New(GDM::ScanType type) {  //
       if (status < 0) {
         return nullptr;
       }
-      ip_address = "255.255.255.255";
-      port = 32412;  // TODO(tdial): define constant above.
+      ip_address = kGdmClientScanAddress;
+      port = kGdmClientScanPort;
     } break;
 
     default: {
@@ -130,7 +139,7 @@ GDM::GDM(int fd, GDM::ScanType type, const char* ip, unsigned short port)
   assert(port_ != 0);
 }
 
-GDM::~GDM() {  //
+GDM::~GDM() {
   assert(fd_ > 0);
   // Close socket.
   // TODO(tdial): Log error if close() fails.
