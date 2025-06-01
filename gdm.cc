@@ -62,7 +62,7 @@ int SetAddressReuseOption(int fd, bool reuse) {
   const int reuse_val = reuse ? 1 : 0;
   const int status =
       setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-                 reinterpret_cast<void*>(reuse_val), sizeof(int));
+                 reinterpret_cast<const void*>(&reuse_val), sizeof(int));
   return status;
 }
 
@@ -74,7 +74,7 @@ int SetBroadcastOption(int fd, bool broadcast) {
   const int broadcast_value = broadcast ? 1 : 0;
   const int status =
       setsockopt(fd, SOL_SOCKET, SO_BROADCAST,
-                 reinterpret_cast<void*>(broadcast_value), sizeof(int));
+                 reinterpret_cast<const void*>(&broadcast_value), sizeof(int));
   return status;
 }
 
@@ -84,8 +84,9 @@ int SetBroadcastOption(int fd, bool broadcast) {
 int SetMulticastTtlOption(int fd, int ttl) {
   assert(fd >= 0);
   assert(ttl >= 0);
-  const int status = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL,
-                                reinterpret_cast<void*>(&ttl), sizeof(int));
+  const int status =
+      setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL,
+                 reinterpret_cast<const void*>(&ttl), sizeof(int));
   return status;
 }
 
@@ -105,12 +106,15 @@ GDM* GDM::New(GDM::ScanType type) {
   int status = 0;
   const char* ip_address = nullptr;
   unsigned short port = 0;
+
+  // Don't go to far.
+  status = SetMulticastTtlOption(sock, 1);
+  if (status < 0) {
+    return nullptr;
+  }
+
   switch (type) {
     case ScanType::kServer: {
-      status = SetMulticastTtlOption(sock, 1);
-      if (status < 0) {
-        return nullptr;
-      }
       ip_address = kGdmServerScanAddress;
       port = kGdmServerScanPort;
     } break;
@@ -157,6 +161,7 @@ GDM::GDM(int fd, GDM::ScanType type, const struct sockaddr_in& address)
 
 int GDM::Scan() {
   // Send the UPnP search message.
+  // for (int j = 0; j < 3; ++j) {
   const ssize_t num_sent =
       sendto(fd_, kGdmScanMessage, sizeof(kGdmScanMessage), 0,
              (const sockaddr*)&address_, sizeof(address_));
@@ -164,20 +169,28 @@ int GDM::Scan() {
     cerr << "sendto(): returned " << num_sent << ", error " << errno;
     return -1;
   }
+  //}
+
+  cerr << "got here 1" << endl;
 
   // Loop, reading for responses.
   for (int i = 0; i < 5; ++i) {
-    char buf[2048] = {0};  // TODO(tdial): allocate dynamically.
+    cerr << "got here 2" << endl;
+    char buf[1024] = {0};  // TODO(tdial): allocate dynamically.
+    cerr << "got here 2.1: sizeof(buf) = " << sizeof(buf) << endl;
     struct sockaddr_in address = {0};
     socklen_t addr_len = sizeof(address_);
     const ssize_t num_received =
         recvfrom(fd_, buf, sizeof(buf) - 1, 0,
                  reinterpret_cast<sockaddr*>(&address), &addr_len);
+    cerr << "got here 3" << endl;
     if (num_received > 0) {
       // TODO(tdial): Actually parse the result, and pass to the caller in some
       // kind of structure. For now, we'll just dump the message to the console.
       buf[num_received] = 0;
       cout << "Received Message: '" << buf << "'" << endl << endl;
+    } else {
+      cerr << "error in receive loop" << endl;
     }
     sleep(1);
   }
