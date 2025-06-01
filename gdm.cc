@@ -10,6 +10,10 @@
 
 namespace {
 
+// This is the text message sent in a datagram when performing scans for
+// Plex servers and clients.
+const char* const kGdmMessage = "M-SEARCH * HTTP/1.0";
+
 // RAII wrapper that closes a file descriptor, unless dismissed.
 class Closer {
  public:
