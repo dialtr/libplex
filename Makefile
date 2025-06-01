@@ -4,13 +4,13 @@ CXXFLAGS=-Wall -Werror -g -std=c++17
 RANLIB=ranlib
 
 .PHONY:
-all: plexgdm.a demo
+all: libplex.a demo
 
 .PHONY:
 clean:
-	-rm -f plexgdm.a demo *.o
+	-rm -f libplex.a demo *.o
 
-demo: demo.o plexgdm.a
+demo: demo.o libplex.a
 	$(CXX) $(CXXFLAGS) -o demo $^
 
 .PHONY:
@@ -21,9 +21,9 @@ format:
 lint:
 	cpplint *.cc *.h
 
-plexgdm.a: gdm.o
-	$(AR) rcs plexgdm.a $^
-	$(RANLIB) plexgdm.a
+libplex.a: gdm.o
+	$(AR) rcs libplex.a $^
+	$(RANLIB) libplex.a
 
 .cc.o:
 	$(CXX) $(CXXFLAGS) -c $<
