@@ -83,12 +83,16 @@ GDM* GDM::New(GDM::ScanType type) {  //
   Closer closer(sock);
 
   int status = 0;
+  const char* ip_address = nullptr;
+  unsigned short port = 0;
   switch (type) {
     case ScanType::kServer: {
       status = SetMulticastTtlOption(sock, 1);
       if (status < 0) {
         return nullptr;
       }
+      ip_address = "239.0.0.250";
+      port = 32414;  // TODO(tdial): define constant above.
     } break;
 
     case ScanType::kClient: {
@@ -100,6 +104,8 @@ GDM* GDM::New(GDM::ScanType type) {  //
       if (status < 0) {
         return nullptr;
       }
+      ip_address = "255.255.255.255";
+      port = 32412;  // TODO(tdial): define constant above.
     } break;
 
     default: {
@@ -108,13 +114,24 @@ GDM* GDM::New(GDM::ScanType type) {  //
     }
   }
 
-  return new GDM(sock, type);
+  closer.Dismiss();
+  return new GDM(sock, type, ip_address, port);
 }
 
-GDM::GDM(int fd, GDM::ScanType type) {  //
+GDM::GDM(int fd, GDM::ScanType type, const char* ip, unsigned short port)
+    : fd_(fd), scan_type_(type), ip_address_(ip), port_(port) {
+  assert(fd >= 0);
+  assert(scan_type_ != ScanType::kNone);
+  assert(ip != nullptr);
+  assert(port_ != 0);
 }
 
 GDM::~GDM() {  //
+  assert(fd_ > 0);
+  // Close socket.
+  // TODO(tdial): Log error if close() fails.
+  const int status = close(fd_);
+  (void)status;
 }
 
 }  // namespace plex

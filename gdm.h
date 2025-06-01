@@ -7,8 +7,9 @@ namespace plex {
 class GDM {
  public:
   enum class ScanType {
-    kServer = 0,  // Scan for servers.
-    kClient = 1   // Scan for clients.
+    kNone = 0,    // Undefined scan type.
+    kServer = 1,  // Scan for servers.
+    kClient = 2   // Scan for clients.
   };
 
   // Create new instance.
@@ -18,7 +19,11 @@ class GDM {
   ~GDM();
 
  private:
-  GDM(int fd, GDM::ScanType type);
+  GDM(int fd, GDM::ScanType type, const char* ip, unsigned short port);
+  int fd_ = -1;
+  GDM::ScanType scan_type_ = ScanType::kNone;
+  const char* ip_address_ = nullptr;
+  unsigned short port_ = 0;
 };
 
 }  // namespace plex
